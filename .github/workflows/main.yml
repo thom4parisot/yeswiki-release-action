@@ -1,0 +1,44 @@
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Test this Action
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Self-test
+      run: |
+        composer install
+        composer test
+
+    - name: Package a dummy extension
+      uses: ./
+      id: package
+      with:
+        extension-dir: /github/workspace/yeswiki-extension-test
+
+    - name: Get the test extension md5sum
+      run: echo "md5sum is ${{ steps.package.outputs.md5sum }}"
+    - name: Get the test extension archive-name
+      run: echo "archive-name is ${{ steps.package.outputs.archive-name }}"
+
+  docker-release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Login to Packages Container registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # Releases it to use outside of GitHub Actions
+    # eg: GitLab CI/CD
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        push: true
+        tags: "ghcr.io/${{ github.repository }}:latest"
