@@ -4,8 +4,6 @@ set -e
 
 COMPOSER_BIN="/usr/bin/composer"
 INPUT_DIR=${1:-$GITHUB_WORKSPACE}
-DEFAULT_OUTPUT_DIR="$INPUT_DIR/dist"
-OUTPUT_DIR=${2:-$DEFAULT_OUTPUT_DIR}
 
 # full extension name
 # eg: yeswiki-extension-publication
@@ -20,6 +18,10 @@ RELEASE_SHORT_NAME="${RELEASE_NAME#yeswiki-}"
 _RELEASE_ID=${RELEASE_SHORT_NAME#extension-}
 RELEASE_ID=${_RELEASE_ID#theme-}
 
+#
+OUTPUT_DIR="/tmp/${RELEASE_ID}_dist"
+TMP_DIR="/tmp/$RELEASE_ID"
+
 # echo "INPUT_DIR: $INPUT_DIR"
 # echo "OUTPUT_DIR: $OUTPUT_DIR"
 # echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
@@ -33,26 +35,29 @@ DEV_REF=$(date +%Y-%m-%d-dev)
 GIT_REF="${GITHUB_REF:-$DEV_REF}"
 GIT_TAG="${4:-$GIT_REF}"
 RELEASE_VERSION=$(echo $GIT_TAG | sed -Ee 's/refs\/(heads|tags)\///' | sed -e 's/\//-/g')
-ARCHIVE_NAME="$RELEASE_ID-$RELEASE_VERSION.zip"
+ARCHIVE_NAME="$RELEASE_SHORT_NAME-$RELEASE_VERSION.zip"
+
+# 0. Copy assets
+cp -rf $INPUT_DIR $TMP_DIR
 
 # 1. Installs extension dependencies
-if [ -f "$INPUT_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
-  $COMPOSER_BIN install --optimize-autoloader --working-dir="$INPUT_DIR"
-  $COMPOSER_BIN test --working-dir="$INPUT_DIR"
-  $COMPOSER_BIN install --quiet --no-dev --optimize-autoloader --working-dir="$INPUT_DIR"
+if [ -f "$TMP_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
+  $COMPOSER_BIN install --optimize-autoloader --working-dir="$TMP_DIR"
+  $COMPOSER_BIN test --working-dir="$TMP_DIR"
+  $COMPOSER_BIN install --quiet --no-dev --optimize-autoloader --working-dir="$TMP_DIR"
 fi
 
 # 2. Create extension version
-if [ -f "$INPUT_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
-  cat $EXTENSION_PATH/composer.json |
+if [ -f "$TMP_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
+  cat $TMP_DIR/composer.json |
     jq -n --arg release $RELEASE_VERSION \
           --arg name $RELEASE_NAME \
-          '{ $release, $name }' > $INPUT_DIR/infos.json
+          '{ $release, $name }' > $TMP_DIR/infos.json
 fi
 
 # 3. Package extension
 mkdir -p "$OUTPUT_DIR"
-(cd $INPUT_DIR && zip -v -q -r $OUTPUT_DIR/$ARCHIVE_NAME . -x '*.git*')
+(cd $(dirname $TMP_DIR) && zip -v -q -r $OUTPUT_DIR/$ARCHIVE_NAME . -x '*.git*')
 
 # 4. Create integrity
 MD5SUM_VALUE=$(md5sum "$OUTPUT_DIR/$ARCHIVE_NAME" | cut -f1 -d' ')

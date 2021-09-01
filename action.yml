@@ -8,10 +8,6 @@ inputs:
     description: 'Extension directory to test and package.'
     required: true
     default: /github/workspace
-  output-dir:
-    description: 'Path to extract m5sum and zipped archive to.'
-    required: false
-    default: /github/workspace/dist
   extension-name:
     description: 'YesWiki extension name (eg: yeswiki-extension-publication)'
     required: false
@@ -28,6 +24,5 @@ runs:
   image: 'Dockerfile'
   args:
     - ${{ inputs.extension-dir }}
-    - ${{ inputs.output-dir }}
-    - ${{ inputs.extension-name }}
-    - ${{ inputs.extension-version }}
+    - ${{ inputs.extension-name || github.repository }}
+    - ${{ inputs.extension-version || github.ref }}

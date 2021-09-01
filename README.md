@@ -13,7 +13,7 @@ composer install
 ## Usage
 
 ```bash
-./package.sh <yeswiki-extension-path> <output-dir> <extension-name?> <extension-version?>
+./package.sh <yeswiki-extension-path> <extension-name?> <extension-version?>
 ```
 
 For example:
@@ -34,7 +34,8 @@ See [Docker Setup](#docker-setup) to run it from everywhere, [including a GitHub
 
 ```yaml
 # .github/workflows/main.yml
-on: [push]
+on:
+  release: [published]
 
 jobs:
   package:
@@ -46,10 +47,6 @@ jobs:
       id: package
       # uses: yeswiki/release-action@v1
       uses: oncletom/yeswiki-release-action@v1
-
-    - name: Create a release
-      uses: actions/create-release@v1
-      # ...
 
     - name: Upload zip file
       uses: actions/upload-release-asset@v1
@@ -75,15 +72,12 @@ docker build -t yeswiki/yeswiki-release .
 ```
 
 ```bash
-docker run --rm -v $(pwd)/yeswiki-extension-test:/yeswiki-extension-test yeswiki/yeswiki-release \
-  yeswiki-extension-test \
-  /tmp/output
+docker run --rm -v $(pwd)/yeswiki-extension-test:/yeswiki-extension-test yeswiki/yeswiki-release yeswiki-extension-test
 ```
 
 ## Roadmap
 
 - [x] Make it work with GitHub Actions
-- [ ] Make it work with GitLab CI
+- [x] Make it work with GitLab CI
 - [ ] Infer extension name from `composer.json`, and make it optional too
 - [ ] Notify YesWiki extension registry
-- [ ] YesWiki extension pulls updated artifacts
