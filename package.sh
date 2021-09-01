@@ -3,11 +3,11 @@
 set -e
 
 COMPOSER_BIN="/usr/bin/composer"
-INPUT_DIR=${1:-$GITHUB_WORKSPACE}
+INPUT_DIR=$(realpath ${1:-$GITHUB_WORKSPACE})
 
 # full extension name
 # eg: yeswiki-extension-publication
-RELEASE_NAME=$(basename ${3:-$INPUT_DIR})
+RELEASE_NAME=$(basename ${2:-$INPUT_DIR})
 
 # extension name made explicit, or infered from filesystem.
 # eg: extension-publication
@@ -22,20 +22,22 @@ RELEASE_ID=${_RELEASE_ID#theme-}
 OUTPUT_DIR="$INPUT_DIR/dist"
 TMP_DIR="/tmp/$RELEASE_ID"
 
-# echo "INPUT_DIR: $INPUT_DIR"
-# echo "OUTPUT_DIR: $OUTPUT_DIR"
-# echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
-# echo "RELEASE_NAME: $RELEASE_NAME"
-# echo "RELEASE_SHORT_NAME: $RELEASE_SHORT_NAME"
-# echo "RELEASE_ID: $RELEASE_ID"
-# echo "GITHUB_REF: $GITHUB_REF"
-
 # extension version passed via an argument, usually git tag
 DEV_REF=$(date +%Y-%m-%d-dev)
 GIT_REF="${GITHUB_REF:-$DEV_REF}"
-GIT_TAG="${4:-$GIT_REF}"
+GIT_TAG="${3:-$GIT_REF}"
 RELEASE_VERSION=$(echo $GIT_TAG | sed -Ee 's/refs\/(heads|tags)\///' | sed -e 's/\//-/g')
 ARCHIVE_NAME="$RELEASE_SHORT_NAME-$RELEASE_VERSION.zip"
+
+# debug
+echo "INPUT_DIR: $INPUT_DIR"
+echo "OUTPUT_DIR: $OUTPUT_DIR"
+echo "TMP_DIR: $TMP_DIR"
+echo "ARCHIVE_NAME: $ARCHIVE_NAME"
+echo "RELEASE_NAME: $RELEASE_NAME"
+echo "RELEASE_SHORT_NAME: $RELEASE_SHORT_NAME"
+echo "RELEASE_ID: $RELEASE_ID"
+echo "GITHUB_REF: $GITHUB_REF"
 
 # 0. Copy assets
 cp -rf $INPUT_DIR $TMP_DIR
@@ -57,7 +59,7 @@ fi
 
 # 3. Package extension
 mkdir -p "$OUTPUT_DIR"
-(cd $(dirname $TMP_DIR) && zip -v -q -r $OUTPUT_DIR/$ARCHIVE_NAME . -x '*.git*')
+(cd $(dirname $TMP_DIR) && zip -v -q -r $OUTPUT_DIR/$ARCHIVE_NAME $RELEASE_ID -x '*.git*')
 
 # 4. Create integrity
 MD5SUM_VALUE=$(md5sum "$OUTPUT_DIR/$ARCHIVE_NAME" | cut -f1 -d' ')
