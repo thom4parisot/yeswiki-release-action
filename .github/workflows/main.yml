@@ -17,6 +17,7 @@ jobs:
       id: package
       with:
         extension-dir: /github/workspace/yeswiki-extension-test
+        extension-name: yeswiki-extension-test
 
     - name: Get the test extension md5sum
       run: echo "md5sum is ${{ steps.package.outputs.md5sum }}"
