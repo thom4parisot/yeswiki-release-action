@@ -19,7 +19,7 @@ _RELEASE_ID=${RELEASE_SHORT_NAME#extension-}
 RELEASE_ID=${_RELEASE_ID#theme-}
 
 #
-OUTPUT_DIR="/tmp/${RELEASE_ID}_dist"
+OUTPUT_DIR="$INPUT_DIR/dist"
 TMP_DIR="/tmp/$RELEASE_ID"
 
 # echo "INPUT_DIR: $INPUT_DIR"

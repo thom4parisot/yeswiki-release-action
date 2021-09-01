@@ -7,13 +7,15 @@ inputs:
   extension-dir:
     description: 'Extension directory to test and package.'
     required: true
-    default: /github/workspace
+    default: ${{ github.workspace }}
   extension-name:
     description: 'YesWiki extension name (eg: yeswiki-extension-publication)'
     required: false
+    default: ${{ github.repository }}
   extension-version:
     description: 'YesWiki extension version (eg: 2020-06-12)'
     required: false
+    default: ${{ github.ref }}
 outputs:
   md5sum:
     description: 'Package integrity signature.'
@@ -24,5 +26,5 @@ runs:
   image: 'Dockerfile'
   args:
     - ${{ inputs.extension-dir }}
-    - ${{ inputs.extension-name || github.repository }}
-    - ${{ inputs.extension-version || github.ref }}
+    - ${{ inputs.extension-name }}
+    - ${{ inputs.extension-version }}
