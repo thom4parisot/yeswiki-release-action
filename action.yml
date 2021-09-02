@@ -25,6 +25,7 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
+    - /package.sh
     - ${{ inputs.extension-dir }}
     - ${{ inputs.extension-name }}
     - ${{ inputs.extension-version }}
