@@ -11,6 +11,12 @@ echo "arg1: $1"
 echo "arg2: $2"
 echo "arg3: $3"
 
+if [ "$#" -eq 0 ]; then
+  echo "Le chemin vers l'extension ou le thème est obligatoire."
+  exit 1
+fi
+
+#
 INPUT_DIR=$(realpath $1)
 
 # full extension name
@@ -42,16 +48,13 @@ GIT_TAG="${3:-$GIT_REF}"
 RELEASE_VERSION=$(echo $GIT_TAG | sed -Ee 's/refs\/(heads|tags)\///' | sed -e 's/\//-/g')
 ARCHIVE_NAME="$RELEASE_SHORT_NAME-$RELEASE_VERSION.zip"
 
-if [ "$#" -eq 0 ]; then
-  die "Le chemin vers l'extension ou le thème est obligatoire."
-fi
-
 # debug
 echo "INPUT_DIR: $INPUT_DIR"
 echo "OUTPUT_DIR: $OUTPUT_DIR"
 echo "TMP_DIR: $TMP_DIR"
 echo "ARCHIVE_NAME: $ARCHIVE_NAME"
 echo "RELEASE_NAME: $RELEASE_NAME"
+echo "RELEASE_VERSION: $RELEASE_VERSION"
 echo "RELEASE_SHORT_NAME: $RELEASE_SHORT_NAME"
 echo "RELEASE_ID: $RELEASE_ID"
 echo "GITHUB_REF: $GITHUB_REF"
