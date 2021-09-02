@@ -19,7 +19,7 @@ RELEASE_NAME=$(basename ${2:-$INPUT_DIR})
 
 if [ -f "$INPUT_DIR/composer.json" ] && [ -x $JQ_BIN ]; then
   echo 'Reading $RELEASE_NAME from composer.json'
-  RELEASE_NAME=$(cat ../yeswiki-extension-publication/composer.json | jq -r '.name | split("/") | join("-")')
+  RELEASE_NAME=$(cat $INPUT_DIR/composer.json | jq -r '.name | split("/") | join("-")')
 fi
 
 # extension name made explicit, or infered from filesystem.
