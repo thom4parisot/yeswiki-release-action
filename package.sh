@@ -2,6 +2,11 @@
 
 set -e
 
+# debug
+echo "arg1: $1"
+echo "arg2: $2"
+echo "arg3: $3"
+
 COMPOSER_BIN="/usr/bin/composer"
 NPM_BIN="/usr/bin/npm"
 INPUT_DIR=$(realpath $1)
@@ -35,9 +40,6 @@ if [ "$#" -eq 0 ]; then
 fi
 
 # debug
-echo "arg1: $1"
-echo "arg2: $2"
-echo "arg3: $3"
 echo "INPUT_DIR: $INPUT_DIR"
 echo "OUTPUT_DIR: $OUTPUT_DIR"
 echo "TMP_DIR: $TMP_DIR"
