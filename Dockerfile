@@ -18,4 +18,4 @@ RUN composer install --quiet
 
 COPY package.sh /package.sh
 
-ENTRYPOINT ["sh"]
+CMD [ "/package.sh" ]
