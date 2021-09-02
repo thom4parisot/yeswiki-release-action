@@ -1,8 +1,9 @@
-name: 'yeswiki-build-repo'
+name: 'yeswiki-release-action'
 description: 'Build script to package YesWiki extensions and themes.'
 branding:
   icon: 'package'
   color: 'yellow'
+
 inputs:
   extension-dir:
     description: 'Extension directory to test and package.'
@@ -16,11 +17,13 @@ inputs:
     description: 'YesWiki extension version (eg: 2020-06-12)'
     required: false
     default: ${{ github.ref }}
+
 outputs:
   md5sum:
     description: 'Package integrity signature.'
   archive-name:
     description: 'Package name, with its version name.'
+
 runs:
   using: 'docker'
   image: 'Dockerfile'
