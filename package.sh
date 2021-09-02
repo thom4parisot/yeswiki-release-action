@@ -2,18 +2,25 @@
 
 set -e
 
+COMPOSER_BIN=$(which composer)
+NPM_BIN=$(which npm)
+JQ_BIN=$(which jq)
+
 # debug
 echo "arg1: $1"
 echo "arg2: $2"
 echo "arg3: $3"
 
-COMPOSER_BIN="/usr/bin/composer"
-NPM_BIN="/usr/bin/npm"
 INPUT_DIR=$(realpath $1)
 
 # full extension name
 # eg: yeswiki-extension-publication
 RELEASE_NAME=$(basename ${2:-$INPUT_DIR})
+
+if [ -f "$INPUT_DIR/composer.json" ] && [ -x $JQ_BIN ]; then
+  echo 'Reading $RELEASE_NAME from composer.json'
+  RELEASE_NAME=$(cat ../yeswiki-extension-publication/composer.json | jq -r '.name | split("/") | join("-")')
+fi
 
 # extension name made explicit, or infered from filesystem.
 # eg: extension-publication
@@ -57,6 +64,8 @@ if [ -f "$TMP_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
   $COMPOSER_BIN install --optimize-autoloader --working-dir="$TMP_DIR"
   $COMPOSER_BIN test --working-dir="$TMP_DIR"
   $COMPOSER_BIN install --quiet --no-dev --optimize-autoloader --working-dir="$TMP_DIR"
+else
+  echo 'Skipping composer.json install…'
 fi
 
 # 2. Installs frontend dependencies
@@ -64,14 +73,18 @@ if [ -f "$TMP_DIR/package-lock.json" ] && [ -x $NPM_BIN ]; then
   $NPM_BIN --prefix="$TMP_DIR" clean-install
 elif [ -f "$TMP_DIR/package.json" ] && [ -x $NPM_BIN ]; then
   $NPM_BIN --prefix="$TMP_DIR" install
+else
+  echo 'Skipping package(-lock).json install…'
 fi
 
 # 3. Create extension version
-if [ -f "$TMP_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
+if [ -f "$TMP_DIR/composer.json" ] && [ -x $JQ_BIN ]; then
   cat $TMP_DIR/composer.json |
-    jq -n --arg release $RELEASE_VERSION \
+    $JQ_BIN -n --arg release $RELEASE_VERSION \
           --arg name $RELEASE_NAME \
           '{ $release, $name }' > $TMP_DIR/infos.json
+else
+  echo 'Skipping infos.json creation…'
 fi
 
 # 4. Package extension

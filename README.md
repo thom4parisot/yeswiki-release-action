@@ -131,7 +131,7 @@ docker run --rm -v $(pwd)/yeswiki-extension-test:/yeswiki-extension-test yeswiki
 
 - [x] [Make it work with GitHub Actions][yeswiki-extension-publication]
 - [x] [Make it work with GitLab CI][oncletom/yeswiki-extension-test]
-- [ ] Infer extension name from `composer.json`, and make it optional too
+- [x] Infer extension name from `composer.json`
 - [ ] Notify YesWiki extension registry
 
 [YesWiki]: https://yeswiki.net
