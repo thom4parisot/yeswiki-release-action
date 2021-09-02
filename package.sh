@@ -3,7 +3,8 @@
 set -e
 
 COMPOSER_BIN="/usr/bin/composer"
-INPUT_DIR=$(realpath ${1:-$GITHUB_WORKSPACE})
+NPM_BIN="/usr/bin/npm"
+INPUT_DIR=$(realpath $1)
 
 # full extension name
 # eg: yeswiki-extension-publication
@@ -29,7 +30,14 @@ GIT_TAG="${3:-$GIT_REF}"
 RELEASE_VERSION=$(echo $GIT_TAG | sed -Ee 's/refs\/(heads|tags)\///' | sed -e 's/\//-/g')
 ARCHIVE_NAME="$RELEASE_SHORT_NAME-$RELEASE_VERSION.zip"
 
+if [ "$#" -eq 0 ]; then
+  die "Le chemin vers l'extension ou le thème est obligatoire."
+fi
+
 # debug
+echo "arg1: $1"
+echo "arg2: $2"
+echo "arg3: $3"
 echo "INPUT_DIR: $INPUT_DIR"
 echo "OUTPUT_DIR: $OUTPUT_DIR"
 echo "TMP_DIR: $TMP_DIR"
@@ -42,14 +50,21 @@ echo "GITHUB_REF: $GITHUB_REF"
 # 0. Copy assets
 cp -rf $INPUT_DIR $TMP_DIR
 
-# 1. Installs extension dependencies
+# 1. Installs PHP dependencies
 if [ -f "$TMP_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
   $COMPOSER_BIN install --optimize-autoloader --working-dir="$TMP_DIR"
   $COMPOSER_BIN test --working-dir="$TMP_DIR"
   $COMPOSER_BIN install --quiet --no-dev --optimize-autoloader --working-dir="$TMP_DIR"
 fi
 
-# 2. Create extension version
+# 2. Installs frontend dependencies
+if [ -f "$TMP_DIR/package-lock.json" ] && [ -x $NPM_BIN ]; then
+  $NPM_BIN --prefix="$TMP_DIR" clean-install
+elif [ -f "$TMP_DIR/package.json" ] && [ -x $NPM_BIN ]; then
+  $NPM_BIN --prefix="$TMP_DIR" install
+fi
+
+# 3. Create extension version
 if [ -f "$TMP_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
   cat $TMP_DIR/composer.json |
     jq -n --arg release $RELEASE_VERSION \
@@ -57,11 +72,11 @@ if [ -f "$TMP_DIR/composer.json" ] && [ -x $COMPOSER_BIN ]; then
           '{ $release, $name }' > $TMP_DIR/infos.json
 fi
 
-# 3. Package extension
+# 4. Package extension
 mkdir -p "$OUTPUT_DIR"
 (cd $(dirname $TMP_DIR) && zip -v -q -r $OUTPUT_DIR/$ARCHIVE_NAME $RELEASE_ID -x '*.git*')
 
-# 4. Create integrity
+# 5. Create integrity
 MD5SUM_VALUE=$(md5sum "$OUTPUT_DIR/$ARCHIVE_NAME" | cut -f1 -d' ')
 md5sum "$OUTPUT_DIR/$ARCHIVE_NAME" > "$OUTPUT_DIR/$ARCHIVE_NAME.md5"
 

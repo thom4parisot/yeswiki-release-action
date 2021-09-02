@@ -8,7 +8,7 @@ inputs:
   extension-dir:
     description: 'Extension directory to test and package.'
     required: true
-    default: ${{ github.workspace }}
+    default: ${{ env.GITHUB_WORKSPACE }}
   extension-name:
     description: 'YesWiki extension name (eg: yeswiki-extension-publication)'
     required: false
