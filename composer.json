@@ -4,7 +4,13 @@
     "type": "project",
     "license": "GPL-3.0",
     "require": {
+        "php": "^7.3 || ^8.0",
         "phpmd/phpmd": "^2.9.0"
+    },
+    "config": {
+      "platform": {
+        "php": "7.3.0"
+      }
     },
     "scripts": {
       "test": "phpmd . text ruleset.xml --exclude vendor/*,yeswiki-extension-test/* --suffixes php"
